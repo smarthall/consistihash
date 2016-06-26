@@ -66,7 +66,7 @@ class Balancer(object):
 
     def balance(self, client):
         client_id = self._client_hash(client)
-        ring = self._make_server_ring()
+        ring = self._ring
 
         index = 0
 
