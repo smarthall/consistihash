@@ -44,6 +44,15 @@ class Balancer(object):
         self._server_hash = server_hash
         self._client_hash = client_hash
 
+        # Make ring
+        self._ring = self._make_server_ring()
+
+    def add_server(self, server):
+        self.servers.append(server)
+
+        # Make ring
+        self._ring = self._make_server_ring()
+
     def _make_server_ring(self):
         servers = self.servers
         ring = []

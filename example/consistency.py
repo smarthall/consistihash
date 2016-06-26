@@ -26,14 +26,52 @@ hasher = consistihash.new(
     servers=servers,
 )
 
-# Balance the clients
+# First balance
 print("Balancing clients")
-tally = Counter()
-total = 0
+old = {}
+oldtally = Counter()
 for c in clients:
-    tally[hasher.balance(c)] += 1
-    total += 1
+    s = hasher.balance(c)
+    oldtally[s] += 1
+    old[c] = s
+
+# Add a new server
+new_server = uuid.uuid4()
+hasher.add_server(new_server)
+print("Added new server: %s" % new_server)
+
+# Second balance
+print("Balancing clients")
+new = {}
+newtally = Counter()
+for c in clients:
+    s = hasher.balance(c)
+    newtally[s] += 1
+    new[c] = s
+
+# Count reassignments
+reassignments = 0
+for c in clients:
+    if old[c] != new[c]:
+        reassignments += 1
+
+total = len(clients)
 
 # Print results
-for item in tally:
-    print("%s: %s" % (item, tally[item]/total))
+print("--- BEFORE ---")
+for item in oldtally:
+    print("%s: %s" % (item, oldtally[item] / total))
+
+print("--- AFTER ---")
+for item in newtally:
+    print("%s: %s" % (item, newtally[item] / total))
+
+print("--- OVERALL ---")
+print("Reassignments: %s" % (reassignments / total))
+
+
+
+
+
+
+
