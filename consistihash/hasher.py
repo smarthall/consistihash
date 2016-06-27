@@ -18,27 +18,33 @@ def short_hash(item):
 
     return zlib.crc32(hash_bytes)
 
-def long_hash(item):
-    """
-    This function should return a list numbers between 0 and pow(2, 32).
-    """
-    if type(item) == bytes:
-        hash_bytes = item
-    elif type(item) == str:
-        hash_bytes = bytes(item, 'utf-8')
-    else:
-        hash_bytes = bytes(str(item), 'utf-8')
+def long_hash(iterations):
+    def long_hash_impl(item):
+        """
+        This function should return a list numbers between 0 and pow(2, 32).
+        """
+        if type(item) == bytes:
+            hash_bytes = item
+        elif type(item) == str:
+            hash_bytes = bytes(item, 'utf-8')
+        else:
+            hash_bytes = bytes(str(item), 'utf-8')
 
-    digest_bytes = hashlib.sha512(hash_bytes).digest()
+        digest_parts = []
+        for i in range(iterations):
+            digest_bytes = hashlib.sha512(hash_bytes).digest()
+            hash_bytes = digest_bytes
 
-    # Split into 4 byte sections
-    digest_parts = (digest_bytes[i*4:(i+1)*4] for i in range(int(len(digest_bytes)/4)))
+            # Split into 4 byte sections
+            digest_parts.extend(digest_bytes[i*4:(i+1)*4] for i in range(int(len(digest_bytes)/4)))
 
-    return [int.from_bytes(part, byteorder='big') for part in digest_parts]
+        return [int.from_bytes(part, byteorder='big') for part in digest_parts]
+
+    return long_hash_impl
 
 
 class Balancer(object):
-    def __init__(self, servers, server_hash=long_hash, client_hash=short_hash):
+    def __init__(self, servers, server_hash=long_hash(10), client_hash=short_hash):
         # Arguments
         self.servers = servers
         self._server_hash = server_hash
