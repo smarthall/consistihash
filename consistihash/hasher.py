@@ -45,7 +45,7 @@ def long_hash(iterations):
 
 
 class Balancer(object):
-    def __init__(self, servers, server_hash=long_hash(10), client_hash=short_hash):
+    def __init__(self, servers, server_hash=long_hash(4096), client_hash=short_hash):
         # Arguments
         self.servers = servers
         self._server_hash = server_hash
@@ -77,5 +77,5 @@ class Balancer(object):
 
         index = bisect_left(self._ring_keys, client_id)
 
-        return self._ring[index % len(self._ring)]
+        return self._ring[index % len(self._ring)].item
 
