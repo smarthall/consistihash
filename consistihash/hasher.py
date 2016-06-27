@@ -2,6 +2,7 @@ import zlib
 import hashlib
 
 from collections import namedtuple
+from bisect import bisect_left
 
 _ring_item = namedtuple('_ring_item', ['id', 'item'])
 
@@ -51,13 +52,13 @@ class Balancer(object):
         self._client_hash = client_hash
 
         # Make ring
-        self._ring = self._make_server_ring()
+        self._make_server_ring()
 
     def add_server(self, server):
         self.servers.append(server)
 
         # Make ring
-        self._ring = self._make_server_ring()
+        self._make_server_ring()
 
     def _make_server_ring(self):
         servers = self.servers
@@ -68,16 +69,13 @@ class Balancer(object):
 
             ring.extend((_ring_item(i, server) for i in ids))
 
-        return sorted(ring, key=lambda x:x.id)
+        self._ring = sorted(ring, key=lambda x:x.id)
+        self._ring_keys = list(map(lambda x:x.id, self._ring))
 
     def balance(self, client):
         client_id = self._client_hash(client)
-        ring = self._ring
 
-        index = 0
+        index = bisect_left(self._ring_keys, client_id)
 
-        while index < len(ring) and ring[index].id < client_id:
-            index += 1
-
-        return ring[index % len(ring)].item
+        return self._ring[index % len(self._ring)]
 

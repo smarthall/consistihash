@@ -22,7 +22,7 @@ clients = [uuid.uuid4() for i in range(client_count)]
 print("Generated %s servers for %s clients" % (len(servers), len(clients)))
 
 # Create a consistent hash algorithm
-for i in [1, 2, 4, 8, 16, 32, 64]:
+for i in [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384]:
     hasher = consistihash.new(
         servers=servers,
         server_hash=consistihash.long_hash(i),
